@@ -78,7 +78,7 @@ async def receive_data(request: Request):
 
     # Crear PDF
     env = Environment(loader=FileSystemLoader("templates"))
-    template = env.get_template("lead_template.html")
+    template = env.get_template("pdf_template.html")
     html_content = template.render(data=filtered_data)
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as f:
