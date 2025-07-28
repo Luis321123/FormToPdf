@@ -33,8 +33,11 @@ EXCLUDED_KEYS = {
     "whatsapp active on/off", "número de veces contactado", "hora de primer mensaje",
     "mortgage/ rent payment", "do you have your social security number", "fecha de agendamiento",
     "inicial", "sede", "hora respuesta del vendedor", "fecha de venta cerrada",
-    "última vez contactado", "documentación"
+    "última vez contactado", "documentación",
+    "tienes al menos $1,500 para el down payment",
+    "tienes cuenta de banco y social"             
 }
+
 
 
 EXCLUDED_NESTED_KEYS = {"location", "user", "workflow", "triggerData", "contact", "attributionSource", "customData"}
