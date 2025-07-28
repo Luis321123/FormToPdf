@@ -23,8 +23,15 @@ GMAIL_PASS = "rablsocexhfirukg"
 
 # Claves que no deben ir al PDF ni imprimirse
 EXCLUDED_KEYS = {
-    "location", "user", "workflow", "triggerData", 
-    "contact", "attributionSource", "customData"
+    "location", "user", "workflow", "triggerData", "contact", "attributionSource", "customData",
+    "tags", "fbcid", "Leads prueba", "Fecha de creación", "Fuente del lead", "contact_type",
+    "Job Title::", "Any additional comments or suggestions?:", "Estimated Number of Users::",
+    "Preferred Contact Method::", "Please select the services you’re interested in::",
+    "Which CRM features are you most interested in?:", "Options :", "Tipo vehículo:",
+    "Signature 1h3t:", "Timestamp masivos:", "Make:", "Timestamp Respuesta:", "Model:",
+    "Year:", "Primer mensaje registrado:", "WhatsApp Automation Active:", "¿Envio primer mensaje?:",
+    "Do you have your social security number?:", "WhatsApp Active ON/OFF:",
+    "Mortgage/ Rent Payment:", "Número de veces contactado:", "Hora de primer mensaje:"
 }
 
 def generar_pdf(data: dict, filename="lead.pdf") -> Path:
@@ -54,19 +61,13 @@ async def recibir_datos(request: Request):
     logger.info(f"📩 POST recibido")
 
     try:
-        # Filtrar campos solo del formulario
-        EXCLUDED_KEYS = {
-            "location", "user", "workflow", "triggerData",
-            "contact", "attributionSource", "customData"
-        }
-
+        # Filtrar los datos del formulario
         form_data = {k: v for k, v in data.items() if k not in EXCLUDED_KEYS}
-        logger.info(f"📄 Datos del formulario: {form_data}")
 
         # Generar PDF con los datos filtrados
         pdf_path = generar_pdf(form_data)
 
-        # Enviar correo con PDF adjunto
+        # Enviar correo
         enviar_email(
             destinatario="luis1233210e@gmail.com",
             asunto="Nuevo lead recibido",
@@ -74,7 +75,8 @@ async def recibir_datos(request: Request):
             archivo_pdf=pdf_path
         )
 
-        os.remove(pdf_path)  # Limpiar archivo
+        os.remove(pdf_path)
+        logger.info(f"PDF generado y enviado correctamente: {pdf_path}")
         return JSONResponse(content={"message": "PDF generado y correo enviado."})
 
     except Exception as e:
