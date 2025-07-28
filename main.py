@@ -38,87 +38,77 @@ EXCLUDED_KEYS = {
     "tienes cuenta de banco y social"             
 }
 
+
+
 EXCLUDED_NESTED_KEYS = {"location", "user", "workflow", "triggerData", "contact", "attributionSource", "customData"}
 
-# Secciones organizadas
-SECTIONS = {
-    "Información personal": [
-        ("First Name", "First Name"),
-        ("Middle name", "Middle Name"),
-        ("Last Name", "Last Name"),
-        ("Date of birth", "Date of Birth"),
-        ("Phone", "Phone"),
-        ("Email", "Email"),
-    ],
-    "Dirección": [
-        ("Address", "Address"),
-        ("City", "City"),
-        ("State", "State"),
-        ("Zip code", "ZIP Code"),
-    ],
-    "Residencia": [
-        ("Residence Type", "Residence Type"),
-        ("Time at Residence", "Time at Residence"),
-    ],
-    "Empleo": [
-        ("Employment status", "Employment Status"),
-        ("Employer name", "Employer Name"),
-        ("Employer Address", "Employer Address"),
-        ("Employer city", "Employer City"),
-        ("Employer State", "Employer State"),
-        ("Employer ZIP", "Employer ZIP"),
-        ("Business Phone", "Business Phone"),
-        ("Occupation", "Occupation"),
-        ("Time on Job", "Time on Job"),
-        ("How often are you paid?", "Payment Frequency"),
-        ("Gross income", "Gross Income"),
-        ("Other Income", "Other Income"),
-        ("Type of employment", "Type of Employment"),
-    ],
-    "Trade-in y Downpayment": [
-        ("Down Payment Amount:", "Down Payment Amount"),
-        ("Trade-in Make:", "Trade-in Make"),
-        ("Trade-in Model:", "Trade-in Model"),
-        ("Trade-in Year:", "Trade-in Year"),
-    ],
-    "Documentos": [
-        ("Pay stubs 1", "Pay Stub 1"),
-        ("Pay stubs 2", "Pay Stub 2"),
-        ("Pay stubs 3", "Pay Stub 3"),
-        ("Pay stubs 4", "Pay Stub 4"),
-        ("Pay stubs 5", "Pay Stub 5"),
-    ],
-    "Comentarios": [
-        ("Additional Comments:", "Additional Comments")
-    ]
+TRANSLATIONS = {
+    "First Name": "First Name",
+    "Middle name": "Middle Name",
+    "Last Name": "Last Name",
+    "Phone": "Phone",
+    "Email": "Email",
+    "Date of birth": "Date of Birth",
+    "Address": "Address",
+    "City": "City",
+    "State": "State",
+    "Zip code": "ZIP Code",
+    "Do you have your social security number?": "Has SSN",
+    "Mortgage/ Rent Payment": "Monthly Rent/Mortgage",
+    "Residence Type": "Residence Type",
+    "Time at Residence": "Time at Residence",
+    "Employment status": "Employment Status",
+    "Employer name": "Employer Name",
+    "Employer Address": "Employer Address",
+    "Employer city": "Employer City",
+    "Employer State": "Employer State",
+    "Employer ZIP": "Employer ZIP",
+    "Business Phone": "Business Phone",
+    "Occupation": "Occupation",
+    "Time on Job": "Time on Job",
+    "How often are you paid?": "Payment Frequency",
+    "Gross income": "Gross Income",
+    "Other Income": "Other Income",
+    "Pay stubs 1": "Pay Stub 1",
+    "Pay stubs 2": "Pay Stub 2",
+    "Pay stubs 3": "Pay Stub 3",
+    "Pay stubs 4": "Pay Stub 4",
+    "Pay stubs 5": "Pay Stub 5",
+    "Down Payment Amount:": "Down Payment Amount",
+    "Trade-in Make:": "Trade-in Make",
+    "Trade-in Model:": "Trade-in Model",
+    "Trade-in Year:": "Trade-in Year",
+    "Additional Comments:": "Additional Comments"
 }
+
 
 def normalize_key(key: str) -> str:
     return key.strip().lower().replace(":", "").replace("¿", "").replace("?", "")
 
-def generar_pdf(data: dict) -> Path:
-    # Limpiar y agrupar los datos por sección
-    secciones = {}
 
-    for section, keys in SECTIONS.items():
-        secciones[section] = []
-        for original_key, display_label in keys:
-            value = data.get(original_key)
-            if not value:
-                # Intentar buscar por normalización
-                for k in data:
-                    if normalize_key(k) == normalize_key(original_key):
-                        value = data[k]
-                        break
-            if value and normalize_key(original_key) not in map(normalize_key, EXCLUDED_KEYS):
-                secciones[section].append({"label": display_label, "value": value})
+def generar_pdf(data: dict) -> Path:
+    clean_data = {}
+
+    for k, v in data.items():
+        if isinstance(v, dict):
+            continue
+
+        normalized = normalize_key(k)
+
+        if normalized in map(normalize_key, EXCLUDED_KEYS):
+            continue
+
+        translated_key = TRANSLATIONS.get(k.strip(), k.strip())
+        clean_data[translated_key] = v
 
     template = env.get_template("pdf_template.html")
-    html_out = template.render(sections=secciones)
+    html_out = template.render(data=clean_data)
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
         HTML(string=html_out).write_pdf(tmp_file.name)
         return Path(tmp_file.name)
+
+
 
 def enviar_email(destinatario: str, asunto: str, cuerpo: str, archivo_pdf: Path):
     msg = EmailMessage()
@@ -133,6 +123,7 @@ def enviar_email(destinatario: str, asunto: str, cuerpo: str, archivo_pdf: Path)
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
         smtp.login(GMAIL_USER, GMAIL_PASS)
         smtp.send_message(msg)
+
 
 @app.post("/webhook")
 async def recibir_datos(request: Request):
