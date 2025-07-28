@@ -50,18 +50,23 @@ def enviar_email(destinatario: str, asunto: str, cuerpo: str, archivo_pdf: Path)
 
 @app.post("/webhook")
 async def recibir_datos(request: Request):
-    raw_data = await request.json()
-    logger.info(f"📩 POST recibido completo: {raw_data}")
+    data = await request.json()
+    logger.info(f"📩 POST recibido")
 
     try:
-        # Filtrar solo datos del formulario (excluir campos innecesarios)
-        filtered_data = {k: v for k, v in raw_data.items() if k not in EXCLUDED_KEYS}
-        logger.info(f"✅ Datos filtrados del formulario: {filtered_data}")
+        # Filtrar campos solo del formulario
+        EXCLUDED_KEYS = {
+            "location", "user", "workflow", "triggerData",
+            "contact", "attributionSource", "customData"
+        }
 
-        # Generar PDF
-        pdf_path = generar_pdf(filtered_data)
+        form_data = {k: v for k, v in data.items() if k not in EXCLUDED_KEYS}
+        logger.info(f"📄 Datos del formulario: {form_data}")
 
-        # Enviar correo
+        # Generar PDF con los datos filtrados
+        pdf_path = generar_pdf(form_data)
+
+        # Enviar correo con PDF adjunto
         enviar_email(
             destinatario="luis1233210e@gmail.com",
             asunto="Nuevo lead recibido",
@@ -69,10 +74,9 @@ async def recibir_datos(request: Request):
             archivo_pdf=pdf_path
         )
 
-        os.remove(pdf_path)
-        logger.info(f"🗑️ PDF eliminado: {pdf_path}")
+        os.remove(pdf_path)  # Limpiar archivo
         return JSONResponse(content={"message": "PDF generado y correo enviado."})
 
     except Exception as e:
-        logger.exception("❌ Error procesando el webhook")
+        logger.exception("Error procesando el webhook")
         return JSONResponse(status_code=500, content={"error": str(e)})
