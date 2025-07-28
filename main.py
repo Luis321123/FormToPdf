@@ -19,7 +19,7 @@ env = Environment(loader=FileSystemLoader(templates_dir))
 
 # Configuración de correo
 GMAIL_USER = "dev@leadgrowthco.com"
-GMAIL_PASS = "tgnbe fkty nvqv uhmo"  
+GMAIL_PASS = "rablsocexhfirukg"  
 
 def generar_pdf(data: dict, filename="lead.pdf") -> Path:
     template = env.get_template("pdf_template.html")
