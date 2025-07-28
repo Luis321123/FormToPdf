@@ -12,6 +12,4 @@ httpx
 requests
 alembic
 tenacity
-libpango
-libcairo
 jinja2 

@@ -63,8 +63,9 @@ async def recibir_datos(request: Request):
 
         # Elimina el PDF si deseas
         os.remove(pdf_path)
-
+        logger.info(f"PDF generado en: {pdf_path}")
         return JSONResponse(content={"message": "PDF generado y correo enviado."})
+
     except Exception as e:
         logger.exception("Error procesando el webhook")
         return JSONResponse(status_code=500, content={"error": str(e)})
