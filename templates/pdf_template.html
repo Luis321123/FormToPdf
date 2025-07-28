@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Lead PDF</title>
+</head>
+<body>
+    <h2>Información del Lead</h2>
+    <ul>
+    {% for key, value in data.items() %}
+        <li><strong>{{ key }}</strong>: {{ value }}</li>
+    {% endfor %}
+    </ul>
+</body>
+</html>

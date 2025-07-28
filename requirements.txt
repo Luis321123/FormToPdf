@@ -2,6 +2,9 @@ fastapi
 uvicorn
 pydantic
 sqlalchemy
+python-multipart
+email-validator
+weasyprint
 python-dotenv
 pydantic-settings
 psycopg2-binary
@@ -9,3 +12,6 @@ httpx
 requests
 alembic
 tenacity
+libpango
+libcairo
+jinja2 
