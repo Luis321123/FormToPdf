@@ -21,6 +21,12 @@ env = Environment(loader=FileSystemLoader(templates_dir))
 GMAIL_USER = "dev@leadgrowthco.com"
 GMAIL_PASS = "rablsocexhfirukg"  
 
+# Claves que no deben ir al PDF ni imprimirse
+EXCLUDED_KEYS = {
+    "location", "user", "workflow", "triggerData", 
+    "contact", "attributionSource", "customData"
+}
+
 def generar_pdf(data: dict, filename="lead.pdf") -> Path:
     template = env.get_template("pdf_template.html")
     html_out = template.render(data=data)
@@ -35,25 +41,27 @@ def enviar_email(destinatario: str, asunto: str, cuerpo: str, archivo_pdf: Path)
     msg["To"] = destinatario
     msg.set_content(cuerpo)
 
-    # Adjuntar PDF
     with open(archivo_pdf, "rb") as f:
         msg.add_attachment(f.read(), maintype="application", subtype="pdf", filename=archivo_pdf.name)
 
-    # Enviar correo
     with smtplib.SMTP_SSL("smtp.gmail.com", 465) as smtp:
         smtp.login(GMAIL_USER, GMAIL_PASS)
         smtp.send_message(msg)
 
 @app.post("/webhook")
 async def recibir_datos(request: Request):
-    data = await request.json()
-    logger.info(f"📩 POST recibido: {data}")
+    raw_data = await request.json()
+    logger.info(f"📩 POST recibido completo: {raw_data}")
 
     try:
-        # Generar PDF
-        pdf_path = generar_pdf(data)
+        # Filtrar solo datos del formulario (excluir campos innecesarios)
+        filtered_data = {k: v for k, v in raw_data.items() if k not in EXCLUDED_KEYS}
+        logger.info(f"✅ Datos filtrados del formulario: {filtered_data}")
 
-        # Enviar correo (aquí puedes usar un campo de `data` como email de destino)
+        # Generar PDF
+        pdf_path = generar_pdf(filtered_data)
+
+        # Enviar correo
         enviar_email(
             destinatario="luis1233210e@gmail.com",
             asunto="Nuevo lead recibido",
@@ -61,11 +69,10 @@ async def recibir_datos(request: Request):
             archivo_pdf=pdf_path
         )
 
-        # Elimina el PDF si deseas
         os.remove(pdf_path)
-        logger.info(f"PDF generado en: {pdf_path}")
+        logger.info(f"🗑️ PDF eliminado: {pdf_path}")
         return JSONResponse(content={"message": "PDF generado y correo enviado."})
 
     except Exception as e:
-        logger.exception("Error procesando el webhook")
+        logger.exception("❌ Error procesando el webhook")
         return JSONResponse(status_code=500, content={"error": str(e)})

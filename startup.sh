@@ -21,6 +21,3 @@ apt-get update && apt-get install -y \
 
 echo " Iniciando FastAPI..."
 uvicorn main:app --host 0.0.0.0 --port 8000
-
-
-python3 -m weasyprint.tool --info
