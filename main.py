@@ -24,18 +24,18 @@ env = Environment(loader=FileSystemLoader(templates_dir))
 
 # Campos a excluir
 EXCLUDED_KEYS = {
-    "tags", "fbcid", "Leads prueba", "Fecha de creación", "Fuente del lead", "contact_type",
-    "Job Title::", "Any additional comments or suggestions?:", "Estimated Number of Users::",
-    "Preferred Contact Method::", "Please select the services you’re interested in::",
-    "Which CRM features are you most interested in?:", "Options :", "Tipo vehículo:",
-    "Signature 1h3t:", "Timestamp masivos:", "Make:", "Timestamp Respuesta:", "Model:", "Year:",
-    "Primer mensaje registrado:", "WhatsApp Automation Active:", "¿Envio primer mensaje?:",
-    "WhatsApp Active ON/OFF:", "Número de veces contactado:", "Hora de primer mensaje:",
-    "Mortgage/ Rent Payment: 2", "Do you have your social security number?: ['Yes']",
-    "fecha de agendamiento", "inicial", "sede:", "hora respuesta del vendedor",
-    "fechad e venta cerrada", "ultima vez contactado:", "Options:", "Documentación:",
-    "Última vez contactado:", "Fecha de venta cerrada:"
+    "tags", "fbcid", "leads prueba", "fecha de creación", "fuente del lead", "contact_type",
+    "job title", "any additional comments or suggestions", "estimated number of users",
+    "preferred contact method", "please select the services you’re interested in",
+    "which crm features are you most interested in", "options", "tipo vehículo",
+    "signature 1h3t", "timestamp masivos", "make", "timestamp respuesta", "model", "year",
+    "primer mensaje registrado", "whatsapp automation active", "envio primer mensaje",
+    "whatsapp active on/off", "número de veces contactado", "hora de primer mensaje",
+    "mortgage/ rent payment", "do you have your social security number", "fecha de agendamiento",
+    "inicial", "sede", "hora respuesta del vendedor", "fecha de venta cerrada",
+    "última vez contactado", "documentación"
 }
+
 
 EXCLUDED_NESTED_KEYS = {"location", "user", "workflow", "triggerData", "contact", "attributionSource", "customData"}
 
@@ -84,11 +84,19 @@ def normalize_key(key: str) -> str:
 
 
 def generar_pdf(data: dict) -> Path:
-    clean_data = {
-        TRANSLATIONS.get(k.strip(), k.strip()): v
-        for k, v in data.items()
-        if k.strip() not in EXCLUDED_KEYS and k not in EXCLUDED_NESTED_KEYS and not isinstance(v, dict)
-    }
+    clean_data = {}
+
+    for k, v in data.items():
+        if isinstance(v, dict):
+            continue
+
+        normalized = normalize_key(k)
+
+        if normalized in map(normalize_key, EXCLUDED_KEYS):
+            continue
+
+        translated_key = TRANSLATIONS.get(k.strip(), k.strip())
+        clean_data[translated_key] = v
 
     template = env.get_template("pdf_template.html")
     html_out = template.render(data=clean_data)
@@ -96,6 +104,7 @@ def generar_pdf(data: dict) -> Path:
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
         HTML(string=html_out).write_pdf(tmp_file.name)
         return Path(tmp_file.name)
+
 
 
 def enviar_email(destinatario: str, asunto: str, cuerpo: str, archivo_pdf: Path):
