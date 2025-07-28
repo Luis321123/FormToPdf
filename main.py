@@ -22,26 +22,69 @@ GMAIL_USER = "dev@leadgrowthco.com"
 GMAIL_PASS = "rablsocexhfirukg"
 
 EXCLUDED_KEYS = {
-    "tags", "fbcid", "leads prueba", "fecha de creación", "fuente del lead", "contact_type",
-    "job title", "any additional comments or suggestions", "estimated number of users",
-    "preferred contact method", "please select the services you’re interested in",
-    "which crm features are you most interested in", "options", "tipo vehículo", "signature 1h3t",
-    "timestamp masivos", "make", "timestamp respuesta", "model", "year", "primer mensaje registrado",
-    "whatsapp automation active", "envio primer mensaje", "do you have your social security number",
-    "whatsapp active on/off", "mortgage/ rent payment", "número de veces contactado",
-    "hora de primer mensaje", "location", "user", "workflow", "triggerdata", "contact",
-    "attributionsource", "customdata"
+    "tags", "fbcid", "Leads prueba", "Fecha de creación", "Fuente del lead", "contact_type",
+    "Job Title::", "Any additional comments or suggestions?:", "Estimated Number of Users::",
+    "Preferred Contact Method::", "Please select the services you’re interested in::",
+    "Which CRM features are you most interested in?:", "Options :", "Tipo vehículo:",
+    "Signature 1h3t:", "Timestamp masivos:", "Make:", "Timestamp Respuesta:", "Model:", "Year:",
+    "Primer mensaje registrado:", "WhatsApp Automation Active:", "¿Envio primer mensaje?:",
+    "WhatsApp Active ON/OFF:", "Número de veces contactado:", "Hora de primer mensaje:",
+    "Mortgage/ Rent Payment: 2", "Do you have your social security number?: ['Yes']",
+    "fecha de agendamiento", "inicial", "sede:", "hora respuesta del vendedor",
+    "fechad e venta cerrada", "ultima vez contactado:"
 }
+
+TRANSLATIONS = {
+    "First Name": "First Name",
+    "Middle name": "Middle Name",
+    "Last Name": "Last Name",
+    "Phone": "Phone",
+    "Email": "Email",
+    "Date of birth": "Date of Birth",
+    "Address": "Address",
+    "City": "City",
+    "State": "State",
+    "Zip code": "Zip Code",
+    "Do you have your social security number?": "Has SSN",
+    "Mortgage/ Rent Payment": "Monthly Rent/Mortgage",
+    "Residence Type": "Residence Type",
+    "Time at Residence": "Time at Residence",
+    "Employment status": "Employment Status",
+    "Employer name": "Employer Name",
+    "Employer Address": "Employer Address",
+    "Employer city": "Employer City",
+    "Employer State": "Employer State",
+    "Employer ZIP": "Employer ZIP",
+    "Business Phone": "Business Phone",
+    "Occupation": "Occupation",
+    "Time on Job": "Time on Job",
+    "How often are you paid?": "Pay Frequency",
+    "Gross income": "Gross Income",
+    "Other Income": "Other Income",
+    "Down Payment Amount": "Down Payment",
+    "Trade-in Make": "Trade-in Make",
+    "Trade-in Model": "Trade-in Model",
+    "Trade-in Year": "Trade-in Year",
+    "Additional Comments": "Additional Comments"
+    # puedes seguir agregando más según sea necesario
+}
+
 
 def normalizar_clave(key: str) -> str:
     return key.strip().lower().replace(":", "").replace("¿", "").replace("?", "")
 
 def generar_pdf(data: dict, filename="lead.pdf") -> Path:
+    clean_data = {}
+    for key, value in data.items():
+        if key.strip() not in EXCLUDED_KEYS:
+            label = TRANSLATIONS.get(key.strip(), key.strip())
+            clean_data[label] = value
     template = env.get_template("pdf_template.html")
-    html_out = template.render(data=data)
+    html_out = template.render(data=clean_data)
     pdf_path = Path(filename)
     HTML(string=html_out).write_pdf(pdf_path)
     return pdf_path
+
 
 def enviar_email(destinatario: str, asunto: str, cuerpo: str, archivo_pdf: Path):
     msg = EmailMessage()
