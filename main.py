@@ -1,33 +1,37 @@
-import logging
 from fastapi import FastAPI
-from routers import webhook_router
+from fastapi.middleware.cors import CORSMiddleware
 
-# Configuración de logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("main")
+from api.api import api_router
 
-# Silenciar logs verbosos
-logging.getLogger("weasyprint").setLevel(logging.WARNING)
-logging.getLogger("urllib3").setLevel(logging.WARNING)
+def create_application():
+    application = FastAPI(
+        title="test",
+        version="0.0.1",
+        description="test.",
+        docs_url="/docs", 
+        swagger_ui_parameters={
+            "defaultModelsExpandDepth": -1, 
+            "defaultModelExpandDepth": -1,   
+            "docExpansion": "none",
+            "persistAuthorization": True,    
+            "tryItOutEnabled":True,           
+        }
+    )
 
-# Crear aplicación FastAPI
-app = FastAPI(
-    title="Lead Processing API",
-    description="API para procesar leads y generar PDFs",
-    version="1.0.0"
+    application.include_router(api_router)
+    return application
+
+app = create_application()
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
-
-# Incluir routers
-app.include_router(webhook_router)
 
 @app.get("/")
 async def root():
-    return {"message": "Lead Processing API is running"}
-
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy"}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    return {"message": "Hi, I am Louis - Your app is done & working, if u have problems contact me (luis1233210e@gmail.com)."}
