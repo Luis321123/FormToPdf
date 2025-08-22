@@ -30,11 +30,10 @@ async def receive_webhook(request: Request, db: Session = Depends(get_session)):
                 user_from=custom_data.get("user_from"),
                 stamp_time=custom_data.get("stamp_time"),
                 status_call=custom_data.get("status_call"),
-                duration=custom_data.get("duration", ""),
+                duration=custom_data.get("duration"),
                 contact_id=custom_data.get("contact_id"),
                 direction=custom_data.get("direction")
             )
-
             db.add(call)
             db.commit()
             db.refresh(call)
