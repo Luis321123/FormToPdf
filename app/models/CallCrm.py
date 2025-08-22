@@ -4,8 +4,8 @@ from sqlalchemy.dialects.postgresql import UUID
 
 from app.models.BaseModel import BaseModel
 
-class CallCrm(BaseModel):
-    __tablename__ = 'call_crm'
+class CallCrmDriverUs(BaseModel):
+    __tablename__ = 'call_crm_driver_us'
 
     uuid = Column(
         UUID(as_uuid=True),
