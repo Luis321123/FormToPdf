@@ -7,11 +7,6 @@ from app.models.BaseModel import BaseModel
 class CallCrmDriverUs(BaseModel):
     __tablename__ = 'call_crm_driver_us'
 
-    uuid = Column(
-        UUID(as_uuid=True),
-        primary_key=True,
-        default=uuid4)
-    
     user_from = Column(String(100), nullable=False)
     stamp_time = Column(String(100), nullable=True)
     status_call = Column(String(100), nullable=False)
